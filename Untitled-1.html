@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Flappy Bird Simples</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #70c5ce;
+        }
+        #gameArea {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        #bird {
+            width: 40px;
+            height: 40px;
+            background-color: yellow;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 80px;
+        }
+        .pipe {
+            width: 60px;
+            background-color: green;
+            position: absolute;
+            top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameArea">
+        <div id="bird"></div>
+    </div>
+
+    <script>
+        const bird = document.getElementById("bird");
+        const gameArea = document.getElementById("gameArea");
+        let gravity = 0.6;
+        let birdVelocity = 0;
+        let isGameOver = false;
+
+        document.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                birdVelocity = -10;
+            }
+        });
+
+        function createPipe() {
+            const pipeTop = document.createElement("div");
+            const pipeBottom = document.createElement("div");
+            const gap = 150;
+            const randomTopHeight = Math.floor(Math.random() * (window.innerHeight - gap - 100)) + 50;
+
+            pipeTop.classList.add("pipe");
+            pipeBottom.classList.add("pipe");
+
+            pipeTop.style.height = randomTopHeight + "px";
+            pipeTop.style.left = window.innerWidth + "px";
+
+            pipeBottom.style.height = (window.innerHeight - randomTopHeight - gap) + "px";
+            pipeBottom.style.top = (randomTopHeight + gap) + "px";
+            pipeBottom.style.left = window.innerWidth + "px";
+
+            gameArea.appendChild(pipeTop);
+            gameArea.appendChild(pipeBottom);
+
+            movePipe(pipeTop, pipeBottom);
+        }
+
+        function movePipe(pipeTop, pipeBottom) {
+            let pipeX = window.innerWidth;
+            const speed = 3;
+
+            const move = setInterval(() => {
+                if (isGameOver) {
+                    clearInterval(move);
+                    return;
+                }
+                
+                pipeX -= speed;
+                pipeTop.style.left = pipeX + "px";
+                pipeBottom.style.left = pipeX + "px";
+
+                // Verificar colisão
+                if (pipeX < 120 && pipeX > 40) {
+                    if (bird.offsetTop < pipeTop.offsetHeight || bird.offsetTop + bird.offsetHeight > pipeBottom.offsetTop) {
+                        endGame();
+                    }
+                }
+
+                if (pipeX < -60) {
+                    clearInterval(move);
+                    pipeTop.remove();
+                    pipeBottom.remove();
+                }
+            }, 20);
+        }
+
+        function endGame() {
+            isGameOver = true;
+            alert("Game Over!");
+            location.reload();
+        }
+
+        function gameLoop() {
+            if (!isGameOver) {
+                birdVelocity += gravity;
+                bird.style.top = bird.offsetTop + birdVelocity + "px";
+
+                // Se bater no chão ou no teto
+                if (bird.offsetTop > window.innerHeight - bird.offsetHeight || bird.offsetTop < 0) {
+                    endGame();
+                }
+
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        setInterval(createPipe, 2000); // Criar cano a cada 2 segundos
+        gameLoop();
+    </script>
+</body>
+</html>
